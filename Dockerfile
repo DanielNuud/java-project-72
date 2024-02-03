@@ -1,9 +1,9 @@
-FROM gradle:8.2.0-jdk20
+FROM amazoncorretto:20.0.2
 
 WORKDIR /app
 
 COPY /app .
 
-RUN gradle installDist
+RUN ./gradlew installDist
 
 CMD ./build/install/app/bin/app
