@@ -4,6 +4,10 @@ import io.javalin.Javalin;
 import lombok.extern.slf4j.Slf4j;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import gg.jte.ContentType;
+import gg.jte.TemplateEngine;
+import io.javalin.rendering.template.JavalinJte;
+import gg.jte.resolve.ResourceCodeResolver;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,6 +18,12 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public final class App {
+    private static TemplateEngine createTemplateEngine() {
+        ClassLoader classLoader = App.class.getClassLoader();
+        ResourceCodeResolver codeResolver = new ResourceCodeResolver("templates", classLoader);
+        TemplateEngine templateEngine = TemplateEngine.create(codeResolver, ContentType.Html);
+        return templateEngine;
+    }
     private static int getPort() {
         String port = System.getenv().getOrDefault("PORT", "7070");
         return Integer.valueOf(port);
@@ -40,6 +50,8 @@ public final class App {
     }
 
     public static Javalin getApp() throws IOException, SQLException {
+        JavalinJte.init(createTemplateEngine());
+
         var dataSource = createDataSource();
         var sql = readResourceFile("urls.sql");
 
