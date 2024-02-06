@@ -69,6 +69,7 @@ public final class App {
 
 
         app.get("/", ctx -> {
+            ctx.status(200);
             ctx.render("index.jte");
         });
 
