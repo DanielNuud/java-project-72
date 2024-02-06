@@ -1,5 +1,6 @@
 package hexlet.code;
 
+import hexlet.code.repository.BaseRepository;
 import io.javalin.Javalin;
 import lombok.extern.slf4j.Slf4j;
 import com.zaxxer.hikari.HikariConfig;
@@ -66,9 +67,11 @@ public final class App {
             config.plugins.enableDevLogging();
         });
 
+
         app.get("/", ctx -> {
-            ctx.result("Hello World");
+            ctx.render("index.jte");
         });
+
 
         return app;
     }
