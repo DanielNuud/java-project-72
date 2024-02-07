@@ -1,5 +1,7 @@
 package hexlet.code;
 
+import hexlet.code.controller.RootController;
+import hexlet.code.controller.UrlController;
 import hexlet.code.repository.BaseRepository;
 import io.javalin.Javalin;
 import lombok.extern.slf4j.Slf4j;
@@ -67,10 +69,9 @@ public final class App {
             config.plugins.enableDevLogging();
         });
 
-
-        app.get("/", ctx -> {
-            ctx.render("index.jte");
-        });
+        app.post("/urls", UrlController::create);
+        app.get("/", RootController::index);
+        app.get("/urls", UrlController::index);
 
 
         return app;
