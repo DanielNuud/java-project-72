@@ -1,4 +1,8 @@
+@import hexlet.code.dto.BasePage
+@param BasePage page
+
 @template.layout.page(
+    page = page,
 content = @`
     <form class="row g-3 needs-validation" novalidate="" action="/urls" method="post">
         <div class="input-group mb-3">
