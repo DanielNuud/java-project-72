@@ -1,9 +1,12 @@
 package hexlet.code.controller;
 
+import hexlet.code.dto.urls.BuildUrlPage;
+import hexlet.code.dto.urls.UrlPage;
 import hexlet.code.dto.urls.UrlsPage;
 import hexlet.code.model.Url;
 import hexlet.code.repository.UrlRepository;
-import io.javalin.http.Context;;
+import io.javalin.http.Context;
+import io.javalin.http.NotFoundResponse;;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.net.URI;
@@ -31,6 +34,10 @@ public class UrlController {
 
     public static void create(Context ctx) throws SQLException {
 
+        java.util.Date date = new java.util.Date();
+        long t = date.getTime();
+        java.sql.Timestamp sqlTimestamp = new java.sql.Timestamp(t);
+
         try {
             var name = ctx.formParamAsClass("url", String.class).get();
 
@@ -41,14 +48,12 @@ public class UrlController {
             URI uri = new URI(name);
             String result = uri.getScheme() + "://" + uri.getHost();
             int port = uri.getPort();
-            long currentTimeMillis = System.currentTimeMillis();
-            Timestamp timestamp = new Timestamp(currentTimeMillis);
 
             if (port != -1) {
                 result += ":" + port;
             }
 
-            var url = new Url(result, timestamp);
+            var url = new Url(result, sqlTimestamp);
             UrlRepository.save(url);
 
             ctx.sessionAttribute("flash", "Url is added successfully!");
@@ -62,4 +67,17 @@ public class UrlController {
         }
     }
 
+    public static void showUrl(Context ctx) throws SQLException {
+        long id = ctx.pathParamAsClass("id", Long.class).getOrDefault(null);
+
+        var url = UrlRepository.find(id)
+                .orElseThrow(() -> new NotFoundResponse("Url with id = " + id + " not found"));
+
+        var page = new UrlPage(url);
+
+        page.setFlash(ctx.consumeSessionAttribute("flash"));
+        page.setFlashType(ctx.consumeSessionAttribute("flash-type"));
+
+        ctx.render("urls/show.jte", Collections.singletonMap("page", page));
+    }
 }
