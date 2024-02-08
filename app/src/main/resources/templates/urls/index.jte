@@ -10,20 +10,18 @@
         <tr>
             <th scope="col">ID</th>
             <th scope="col">Name</th>
-            <th scope="col">Created At</th>
         </tr>
         </thead>
         @for(var url : page.getUrls())
         <tbody>
         <tr>
             <th scope="row">${url.getId()}</th>
-            <td>${url.getName()}</td>
-            <td></td>
+            <td><a href="/urls/${url.getId()}">${url.getName()}</a></td>
         </tr>
         </tbody>
         @endfor
     </table>
-    <button type="button" class="btn btn-primary"><a href="/">Back</a></button>
+    <button type="button" class="btn btn-primary" onclick="window.history.back()">Back</button>
 `)
 
 
