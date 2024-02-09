@@ -1,19 +1,17 @@
 package hexlet.code.controller;
 
-import hexlet.code.dto.urls.BuildUrlPage;
 import hexlet.code.dto.urls.UrlPage;
 import hexlet.code.dto.urls.UrlsPage;
 import hexlet.code.model.Url;
 import hexlet.code.repository.UrlRepository;
 import io.javalin.http.Context;
-import io.javalin.http.NotFoundResponse;;
+import io.javalin.http.NotFoundResponse;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.net.URI;
 
 import java.net.URISyntaxException;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.Collections;
 
 public class UrlController {
