@@ -1,4 +1,5 @@
 @import hexlet.code.dto.urls.UrlPage
+@import hexlet.code.util.NamedRoutes
 @import java.time.format.DateTimeFormatter
 @param UrlPage page
 
@@ -27,7 +28,7 @@ content = @`
             </tbody>
         </table>
 
-        <form action="/urls/${page.getUrl().getId()}/checks" method="post">
+        <form action="${NamedRoutes.urlCheckPath(page.getUrl().getId())}" method="post">
             <button type="submit" class="btn btn-primary">Check</button>
         </form>
 
