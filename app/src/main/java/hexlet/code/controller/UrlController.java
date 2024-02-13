@@ -1,15 +1,16 @@
 package hexlet.code.controller;
 
-import hexlet.code.UrlCheck;
+import hexlet.code.model.UrlCheck;
 import hexlet.code.dto.urls.UrlPage;
 import hexlet.code.dto.urls.UrlsPage;
 import hexlet.code.model.Url;
 import hexlet.code.repository.UrlCheckRepository;
 import hexlet.code.repository.UrlRepository;
+import hexlet.code.util.NamedRoutes;
 import io.javalin.http.Context;
 import io.javalin.http.NotFoundResponse;
 
-import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.net.URI;
@@ -27,12 +28,19 @@ import java.sql.SQLException;
 import java.util.Collections;
 
 public class UrlController {
-    private static final String URL_REGEX = "^(https?|ftp):\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z]{2,})+(\\/\\S*)?$";
+    private static final String URL_REGEX = "^(https?|ftp|http?):\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z]{2,})" +
+            "(:\\d+)?(\\/\\S*)?$";
 
     public static boolean isValidUrl(String url) {
         Pattern pattern = Pattern.compile(URL_REGEX);
         Matcher matcher = pattern.matcher(url);
         return matcher.matches();
+    }
+
+    public static Timestamp getSqlTime() {
+        java.util.Date date = new java.util.Date();
+        long t = date.getTime();
+        return new Timestamp(t);
     }
 
     public static void index(Context ctx) throws SQLException {
@@ -43,16 +51,12 @@ public class UrlController {
         ctx.render("urls/index.jte", Collections.singletonMap("page", page));
     }
 
-    public static void create(Context ctx) throws SQLException {
-
-        java.util.Date date = new java.util.Date();
-        long t = date.getTime();
-        java.sql.Timestamp sqlTimestamp = new java.sql.Timestamp(t);
+    public static void create(Context ctx) {
 
         try {
             var name = ctx.formParamAsClass("url", String.class).get();
 
-            if (!isValidUrl(name)) {
+             if (!isValidUrl(name)) {
                 throw new URISyntaxException("Invalid URL", "");
             }
 
@@ -64,21 +68,21 @@ public class UrlController {
                 result += ":" + port;
             }
 
-            var url = new Url(result, sqlTimestamp);
+            var url = new Url(result, getSqlTime());
             UrlRepository.save(url);
 
             ctx.sessionAttribute("flash", "Url is added successfully!");
             ctx.sessionAttribute("flash-type", "alert alert-success");
-            ctx.redirect("/urls");
+            ctx.redirect(NamedRoutes.urlsPath());
 
         } catch (URISyntaxException e) {
             ctx.sessionAttribute("flash", "Invalid URL");
             ctx.sessionAttribute("flash-type", "alert alert-danger");
-            ctx.redirect("/");
+            ctx.redirect(NamedRoutes.rootPath());
         } catch (SQLException e) {
             ctx.sessionAttribute("flash", "URL is already exists!");
             ctx.sessionAttribute("flash-type", "alert alert-danger");
-            ctx.redirect("/");
+            ctx.redirect(NamedRoutes.urlsPath());
         }
     }
 
@@ -97,12 +101,8 @@ public class UrlController {
         ctx.render("urls/show.jte", Collections.singletonMap("page", page));
     }
 
-    public static void createCheck(Context ctx) throws SQLException, IOException {
-        Long urlId = ctx.pathParamAsClass("id", Long.class).getOrDefault(null);
-
-        java.util.Date date = new java.util.Date();
-        long t = date.getTime();
-        java.sql.Timestamp sqlTimestamp = new java.sql.Timestamp(t);
+    public static void createCheck(Context ctx) {
+        long urlId = ctx.pathParamAsClass("id", Long.class).getOrDefault(null);
 
         try {
             var url = UrlRepository.find(urlId);
@@ -123,15 +123,15 @@ public class UrlController {
             Element descriptionElement = document.selectFirst("meta[name=description]");
             String description = (descriptionElement != null) ? descriptionElement.attr("content") : "";
 
-            var urlCheck = new UrlCheck(statusCode, title, h1, description, sqlTimestamp);
+            var urlCheck = new UrlCheck(statusCode, title, h1, description, urlId, getSqlTime());
             UrlCheckRepository.save(urlCheck);
             ctx.sessionAttribute("flash", "URL is checked successfully!");
             ctx.sessionAttribute("flash-type", "alert alert-success");
-            ctx.redirect("/urls/" + urlId);
+            ctx.redirect(NamedRoutes.urlPath(urlId));
         } catch (Exception e) {
             ctx.sessionAttribute("flash", "Error during URL check: " + e.getMessage());
             ctx.sessionAttribute("flash-type", "alert alert-danger");
-            ctx.redirect("/urls/{id}");
+            ctx.redirect(NamedRoutes.urlPath(urlId));
         }
     }
 }
