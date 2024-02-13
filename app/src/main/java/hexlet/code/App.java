@@ -3,6 +3,7 @@ package hexlet.code;
 import hexlet.code.controller.RootController;
 import hexlet.code.controller.UrlController;
 import hexlet.code.repository.BaseRepository;
+import hexlet.code.util.NamedRoutes;
 import io.javalin.Javalin;
 import lombok.extern.slf4j.Slf4j;
 import com.zaxxer.hikari.HikariConfig;
@@ -69,11 +70,11 @@ public final class App {
             config.plugins.enableDevLogging();
         });
 
-        app.post("/urls", UrlController::create);
-        app.get("/", RootController::index);
-        app.get("/urls", UrlController::index);
-        app.get("/urls/{id}", UrlController::showUrl);
-
+        app.post(NamedRoutes.urlsPath(), UrlController::create);
+        app.get(NamedRoutes.rootPath(), RootController::index);
+        app.get(NamedRoutes.urlsPath(), UrlController::index);
+        app.get(NamedRoutes.urlPath(), UrlController::showUrl);
+        app.post(NamedRoutes.urlCheckPath(), UrlController::createCheck);
 
         return app;
     }
