@@ -1,8 +1,6 @@
 package hexlet.code.repository;
 
 import hexlet.code.model.Url;
-import hexlet.code.repository.BaseRepository;
-
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -62,15 +60,4 @@ public class UrlRepository extends BaseRepository {
         }
     }
 
-    public static boolean existsByName(String name) throws SQLException {
-        var sql = "SELECT COUNT(*) FROM urls WHERE name = ?";
-        try (var conn = dataSource.getConnection();
-             var stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, name);
-            var resultSet = stmt.executeQuery();
-            resultSet.next();
-            int count = resultSet.getInt(1);
-            return count > 0;
-        }
-    }
 }
