@@ -1,12 +1,8 @@
-DROP TABLE IF EXISTS urls;
-
 CREATE TABLE urls (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE,
     createdAt TIMESTAMP NOT NULL
 );
-
-DROP TABLE IF EXISTS url_checks;
 
 CREATE TABLE url_checks (
     id SERIAL PRIMARY KEY,
