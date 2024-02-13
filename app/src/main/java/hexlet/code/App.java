@@ -73,7 +73,6 @@ public final class App {
         app.get("/", RootController::index);
         app.get("/urls", UrlController::index);
         app.get("/urls/{id}", UrlController::showUrl);
-        app.post("/urls/{id}/checks", UrlController::createCheck);
 
 
         return app;
