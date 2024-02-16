@@ -25,7 +25,7 @@ jobs:
         run: make report
 
       - name: Upload coverage report
-        uses: paambaati/codeclimate-action@v2.2.4
+        uses: paambaati/codeclimate-action@v2.7.1
         env:
           CC_TEST_REPORTER_ID: 6c77034c12908b2db7e3e3fef42965e46b34adaa9884b75c97790608ee9da4fb
           JACOCO_SOURCE_PATH: "${{github.workspace}}/app/src/main/java"
