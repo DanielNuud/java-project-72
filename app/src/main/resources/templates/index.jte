@@ -1,18 +1,17 @@
 @import hexlet.code.dto.BasePage
-@import hexlet.code.util.NamedRoutes
 @param BasePage page
 
 @template.layout.page(
     page = page,
 content = @`
-    <form action="${NamedRoutes.urlsPath()}" method="post">
-        <div class="mb-3">
-            <label for="inputUrl" class="form-label">Put your URL here:</label>
-            <input type="text" class="form-control" id="inputUrl" aria-describedby="emailHelp"
-            name="url" required>
-            <div id="emailHelp" class="form-text">Example: https://www.example.com</div>
+    <form class="row g-3 needs-validation" novalidate="" action="/urls" method="post">
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="inputGroup-sizing-default">Url</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+                   aria-describedby="inputGroup-sizing-default" name="url" required>
         </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <div class="col-12">
+            <button class="btn btn-primary" type="submit">Submit</button>
+        </div>
     </form>
 `)
-

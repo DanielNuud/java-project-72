@@ -8,7 +8,7 @@
 @template.layout.page(
     page = page,
     content = @`
-    <table class="table">
+    <table class="table table-dark text-light">
         <thead>
         <tr>
             <th scope="col">ID</th>
@@ -26,7 +26,7 @@
         </tbody>
         @endfor
     </table>
-    <button type="button" class="btn btn-primary" onclick="window.history.back()">Back</button>
+    <button type="button" class="btn btn-primary" onclick="window.location.href='/'">Back</button>
 `)
 
 
