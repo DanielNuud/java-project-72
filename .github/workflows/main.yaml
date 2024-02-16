@@ -9,19 +9,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK 20
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
           distribution: 'corretto'
-      - name: Build
+          java-version: '21'
+
+      - name: Build with Gradle
         run: make build
-      - name: Publish code coverage
-        uses: paambaati/codeclimate-action@v2.7.1
+
+      - name: Run tests with coverage
+        run: make report
+
+      - name: Upload coverage report
+        uses: paambaati/codeclimate-action@v2.2.4
         env:
-          CC_TEST_REPORTER_ID: ${{secrets.JAVA_PROJECT_72}}
+          CC_TEST_REPORTER_ID: 6c77034c12908b2db7e3e3fef42965e46b34adaa9884b75c97790608ee9da4fb
           JACOCO_SOURCE_PATH: "${{github.workspace}}/app/src/main/java"
         with:
-          coverageCommand: chmod +x ./gradlew jacocoTestReport
+          coverageCommand: ./gradlew jacocoTestReport
           coverageLocations: ${{github.workspace}}/app/build/reports/jacoco/test/jacocoTestReport.xml:jacoco
