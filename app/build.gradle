@@ -1,6 +1,7 @@
 plugins {
     id 'application'
     id 'java'
+    id 'jacoco'
     id 'checkstyle'
     id 'io.freefair.lombok' version '8.3'
     id 'com.github.ben-manes.versions' version '0.47.0'
@@ -39,6 +40,17 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
 }
 
+
+
 test {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
 }
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+    }
+}
+

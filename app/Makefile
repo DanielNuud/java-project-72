@@ -21,6 +21,6 @@ test:
 	./gradlew test
 
 report:
-	./gradlew jacocoTestReport
+	chmod +x ./gradlew jacocoTestReport
 
 .PHONY: build
