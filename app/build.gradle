@@ -3,9 +3,9 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'checkstyle'
-    id 'io.freefair.lombok' version '8.3'
-    id 'com.github.ben-manes.versions' version '0.47.0'
+    id 'io.freefair.lombok' version '8.6'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id "com.github.ben-manes.versions" version "0.51.0"
 }
 
 application {
@@ -20,23 +20,22 @@ repositories {
 }
 
 dependencies {
-    implementation ('org.jsoup:jsoup:1.17.2')
-    implementation 'com.konghq:unirest-java:3.13.6'
-    implementation("org.postgresql:postgresql:42.6.0")
+    implementation("org.jsoup:jsoup:1.17.2")
+    implementation("com.konghq:unirest-java:4.0.0-RC2")
+    implementation("org.postgresql:postgresql:42.7.1")
     implementation("com.zaxxer:HikariCP:5.0.1")
-    implementation("com.h2database:h2:2.2.222")
-    implementation("com.zaxxer:HikariCP:5.0.1")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
-    implementation("org.apache.commons:commons-text:1.10.0")
+    implementation("com.h2database:h2:2.2.224")
+    implementation("com.zaxxer:HikariCP:5.1.0")
+    implementation("org.apache.commons:commons-text:1.11.0")
     implementation("gg.jte:jte:3.1.9")
-    implementation("org.slf4j:slf4j-simple:2.0.9")
-    implementation("io.javalin:javalin:5.6.2")
-    implementation("io.javalin:javalin-bundle:5.6.2")
-    implementation("io.javalin:javalin-rendering:5.6.2")
+    implementation("org.slf4j:slf4j-simple:2.1.0-alpha1")
+    implementation("io.javalin:javalin:5.6.3")
+    implementation("io.javalin:javalin-bundle:5.6.3")
+    implementation("io.javalin:javalin-rendering:5.6.3")
 
-    testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
-    testImplementation("org.assertj:assertj-core:3.24.2")
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
+    testImplementation 'com.squareup.okhttp3:mockwebserver:5.0.0-alpha.12'
+    testImplementation("org.assertj:assertj-core:3.25.3")
+    testImplementation(platform("org.junit:junit-bom:5.10.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 }
 
@@ -55,8 +54,7 @@ jacocoTestReport {
 
 jacoco {
     toolVersion = "0.8.11"
-    reportsDirectory = layout.buildDirectory.dir('reports/jacoco')
+    reportsDirectory = layout.buildDirectory.dir("reports/jacoco")
 }
-
 
 
