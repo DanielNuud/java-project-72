@@ -48,7 +48,6 @@ test {
 jacocoTestReport {
     reports {
         xml.required = true
-        html.required = true
     }
 }
 
@@ -56,5 +55,6 @@ jacoco {
     toolVersion = "0.8.11"
     reportsDirectory = layout.buildDirectory.dir("reports/jacoco")
 }
+
 
 
