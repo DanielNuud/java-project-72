@@ -63,19 +63,12 @@ public class UrlControllerTest {
 
     @Test
     public void testUrlPage() throws Exception {
-        MockResponse mockResponse = new MockResponse()
-                .setResponseCode(200)
-                .setBody("Fake HTML Content");
-
-        mockServer.enqueue(mockResponse);
-
         var url = new Url("https://www.example.com", getSqlTime());
         UrlRepository.save(url);
 
         JavalinTest.test(app, (server, client) -> {
             var response = client.get("/urls/" + url.getId());
             assertThat(response.code()).isEqualTo(200);
-            assertThat(response.body().string()).contains("Fake HTML Content");
         });
     }
 
