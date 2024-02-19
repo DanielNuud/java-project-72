@@ -29,4 +29,5 @@ jobs:
         with:
           debug: true
           coverageCommand: make -C app report
+          coverageInputType: jacoco
           coverageLocations: ${{github.workspace}}/app/build/reports/jacoco/test/jacocoTestReport.xml:jacoco
