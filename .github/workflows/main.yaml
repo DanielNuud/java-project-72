@@ -19,16 +19,14 @@ jobs:
           java-version: '21'
 
       - name: Build with Gradle
-        run: make build
+        run: make -C app build
 
-      - name: Run tests with coverage
-        run: make report
-
-      - name: Upload coverage report
+      - name: Make code coverage report
         uses: paambaati/codeclimate-action@v5.0.0
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.JAVA_PROJECT_72 }}
           JACOCO_SOURCE_PATH: "${{github.workspace}}/app/src/main/java"
         with:
-          coverageCommand: ./gradlew -p app jacocoTestReport
+          debug: true
+          coverageCommand: make -C app report
           coverageLocations: ${{github.workspace}}/app/build/reports/jacoco/test/jacocoTestReport.xml:jacoco
