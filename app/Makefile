@@ -23,4 +23,7 @@ test:
 report:
 	@./gradlew jacocoTestReport
 
+report2:
+	@./gradlew clean test jacocoTestReport
+
 .PHONY: build

@@ -22,7 +22,7 @@ jobs:
         run: make -C app build
 
       - name: Run tests with coverage
-        run: /.gradlew clean test jacocoTestReport -C app
+        run: make -C app report2
 
       - name: Make code coverage report
         uses: paambaati/codeclimate-action@v5.0.0
