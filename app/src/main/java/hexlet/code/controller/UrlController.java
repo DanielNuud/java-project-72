@@ -56,7 +56,7 @@ public class UrlController {
         try {
             var name = ctx.formParamAsClass("url", String.class).get();
 
-             if (!isValidUrl(name)) {
+            if (!isValidUrl(name)) {
                 throw new URISyntaxException("Invalid URL", "");
             }
 

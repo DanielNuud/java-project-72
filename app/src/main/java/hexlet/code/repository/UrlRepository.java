@@ -11,7 +11,7 @@ public class UrlRepository extends BaseRepository {
     public static void save(Url url) throws SQLException {
         String sql = "INSERT INTO urls (name, createdAt) VALUES (?, ?)";
         try (var conn = dataSource.getConnection();
-        var preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            var preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setString(1, url.getName());
             preparedStatement.setTimestamp(2, url.getCreatedAt());
             preparedStatement.execute();
@@ -45,7 +45,7 @@ public class UrlRepository extends BaseRepository {
     public static List<Url> getEntities() throws SQLException {
         var sql = "SELECT * FROM urls";
         try (var conn = dataSource.getConnection();
-        var stmt = conn.prepareStatement(sql)) {
+            var stmt = conn.prepareStatement(sql)) {
             var resultSet = stmt.executeQuery();
             var result = new ArrayList<Url>();
             while (resultSet.next()) {
