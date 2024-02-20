@@ -28,8 +28,8 @@ import java.sql.SQLException;
 import java.util.Collections;
 
 public class UrlController {
-    private static final String URL_REGEX = "^(https?|ftp|http?):\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z]{2,})" +
-            "(:\\d+)?(\\/\\S*)?$";
+    private static final String URL_REGEX = "^(https?|ftp|http?):\\/\\/(www\\.)?[a-zA-Z0-9-]+(\\.[a-zA-Z]{2,})"
+            + "(:\\d+)?(\\/\\S*)?$";
 
     public static boolean isValidUrl(String url) {
         Pattern pattern = Pattern.compile(URL_REGEX);
