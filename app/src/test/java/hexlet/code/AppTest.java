@@ -1,5 +1,6 @@
 package hexlet.code;
 
+import hexlet.code.repository.UrlRepository;
 import io.javalin.Javalin;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
@@ -42,13 +43,8 @@ public class AppTest {
     }
 
     @BeforeEach
-    public void clearDatabase() {
-        try (Connection connection = DriverManager.getConnection("jdbc:h2:mem:project;DB_CLOSE_DELAY=-1;");
-             Statement statement = connection.createStatement()) {
-            statement.executeUpdate("DELETE FROM urls");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public void clearDatabase() throws SQLException {
+        UrlRepository.deleteAllEntities();
     }
 
     @Test
