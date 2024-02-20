@@ -31,13 +31,13 @@ public class UrlCheckRepository extends BaseRepository {
         }
     }
 
-    public static List<UrlCheck> findByUrlId(Long urlId) throws SQLException {
+    public static List<UrlCheck> findByUrlId(Long idUrl) throws SQLException {
         var sql = "SELECT * FROM url_checks WHERE url_id = ?";
         List<UrlCheck> urlChecks = new ArrayList<>();
 
         try (var conn = dataSource.getConnection();
              var stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, urlId);
+            stmt.setLong(1, idUrl);
             var resultSet = stmt.executeQuery();
 
             while (resultSet.next()) {
@@ -46,10 +46,10 @@ public class UrlCheckRepository extends BaseRepository {
                 var title = resultSet.getString("title");
                 var h1 = resultSet.getString("h1");
                 var description = resultSet.getString("description");
-                var url_id = resultSet.getLong("url_id");
+                var urlId = resultSet.getLong("url_id");
                 var createdAt = resultSet.getTimestamp("created_at");
 
-                var urlCheck = new UrlCheck(statusCode, title, h1, description, url_id, createdAt);
+                var urlCheck = new UrlCheck(statusCode, title, h1, description, urlId, createdAt);
                 urlCheck.setId(id);
                 urlChecks.add(urlCheck);
             }
