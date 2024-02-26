@@ -1,147 +1,138 @@
 package hexlet.code;
 
-import hexlet.code.model.Url;
+import hexlet.code.repository.UrlCheckRepository;
 import hexlet.code.repository.UrlRepository;
-
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.MethodOrderer;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
 import io.javalin.Javalin;
+import io.javalin.testtools.JavalinTest;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Optional;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Date;
 
-public class AppTest {
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    private static Javalin app;
-    private static String baseUrl;
-    private static final String NONEXISTENT_URL_ID = "111";
-    public static Timestamp getSqlTime() {
-        java.util.Date date = new java.util.Date();
-        long t = date.getTime();
-        return new Timestamp(t);
-    }
+public final class AppTest {
+
+    private Javalin app;
+
+    private static MockWebServer testServer;
+    private static String website;
+    private static String name;
 
     @BeforeAll
-    public static void setUp() throws SQLException, IOException {
+    public static void setServer() throws Exception {
+        testServer = new MockWebServer();
+
+        Path path = Paths.get("src/test/resources/test.html").toAbsolutePath().normalize();
+        String content = Files.readString(path);
+        testServer.enqueue(new MockResponse().setBody(content));
+
+        testServer.start();
+
+        website = testServer.url("/").toString();
+        name = String.format("http://localhost:%s", testServer.getPort());
+    }
+
+    @BeforeEach
+    public void setUp() throws Exception {
         app = App.getApp();
-        app.start(0);
-        baseUrl = "http://localhost:" + app.port();
+    }
+
+    @AfterEach
+    public void close() {
+        app.close();
     }
 
     @AfterAll
-    public static void tearDown() {
-        app.stop();
+    public static void closeServer() throws IOException {
+        testServer.shutdown();
     }
 
+    @Test
+    public void testMainPage() {
+        JavalinTest.test(app, (server, client) -> {
+            var response = client.get("/");
+            assertThat(response.code()).isEqualTo(200);
+            assertThat(response.body().string()).contains("Page Analyzer");
+        });
+    }
 
-    @Nested
-    @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-    class UrlTest {
+    @Test
+    public void testUrlsPage() {
+        JavalinTest.test(app, (server, client) -> {
+            var response = client.get("/urls");
+            assertThat(response.code()).isEqualTo(200);
+            assertThat(response.body().string()).contains("List is empty");
+        });
+    }
 
-        @Test
-        @Order(1)
-        void testMain() {
-            HttpResponse<String> response = Unirest.get(baseUrl).asString();
-            assertEquals(response.getStatus(), 200);
-            assertTrue(response.getBody().contains("Page Analyzer"));
-            assertTrue(response.getBody().contains("Example: https://www.example.com"));
-        }
+    @Test
+    public void testUrlsPageWithPageNumber() {
+        JavalinTest.test(app, (server, client) -> {
+            client.post("/urls", "url=" + website);
+            assertThat(client.get("/urls?page=1").code()).isEqualTo(200);
+            assertThat(client.get("/urls?page=1").body().string()).contains("/urls?page=1");
+            assertThat(client.get("/urls?page=99").body().string()).contains("Page is not found");
+        });
+    }
 
-        @Test
-        @Order(2)
-        void testListUrls() throws SQLException {
-            UrlRepository.save(new Url("https://www.example1.com", getSqlTime()));
-            UrlRepository.save(new Url("https://www.example2.com", getSqlTime()));
-            UrlRepository.save(new Url("https://www.example3.com", getSqlTime()));
+    @Test
+    public void testCreateUrl() {
+        JavalinTest.test(app, (server, client) -> {
+            Object requestBody = "url=" + website;
+            var request = client.post("/urls", requestBody);
+            assertThat(request.code()).isEqualTo(200);
+            assertTrue(UrlRepository.existsByName(name));
+        });
+    }
 
-            HttpResponse<String> response = Unirest.get(baseUrl + "/urls").asString();
-            String body = response.getBody();
+    @Test
+    public void testCreateUrlFail() {
+        JavalinTest.test(app, (server, client) -> {
+            Object requestBody = "url=invalid-url";
+            client.post("/urls", requestBody);
+            assertFalse(UrlRepository.existsByName("invalid-url"));
+        });
+    }
 
-            assertEquals(response.getStatus(), 200);
-            assertTrue(body.contains("https://www.example1.com"));
-            assertTrue(body.contains("https://www.example2.com"));
-            assertTrue(body.contains("https://www.example3.com"));
+    @Test
+    public void testRunCheck() {
+        JavalinTest.test(app, (server, client) -> {
+            client.post("/urls", "url=" + website);
 
-        }
+            var urlId = UrlRepository.findByName(name).get().getId();
+            client.post(String.format("/urls/%s/checks", urlId));
 
-        @Test
-        @Order(3)
-        void testShowUrl() throws SQLException {
-            UrlRepository.save(new Url("https://www.example4.com", getSqlTime()));
-            HttpResponse<String> response = Unirest.get(baseUrl + "/urls/4").asString();
-            String body = response.getBody();
+            var check = UrlCheckRepository.find(urlId).get(0);
+            assertThat(check.getStatusCode()).isEqualTo(200);
+            assertThat(check.getH1()).isEqualTo("Hello, world!");
+            assertThat(check.getTitle()).isEqualTo("Test");
+            assertThat(check.getDescription()).isEqualTo("Test Webpage");
+            assertThat(check.getCreatedAt()).isBeforeOrEqualTo(new Date(System.currentTimeMillis()));
+        });
+    }
 
-            assertEquals(response.getStatus(), 200);
-            assertTrue(body.contains("https://www.example4.com"));
-        }
+    @Test
+    public void testRunCheckFail() {
+        JavalinTest.test(app, (server, client) -> {
+            var fakeWebsite = "http://localhost:7070";
+            client.post("/urls", "url=" + fakeWebsite);
 
-        @Test
-        @Order(4)
-        void testAddUrl() throws SQLException {
-            String input = "https://www.example.com";
-            HttpResponse<String> responsePost = Unirest.post(baseUrl + "/urls")
-                    .field("url", input).asString();
+            var urlId = UrlRepository.findByName(fakeWebsite).get().getId();
+            client.post(String.format("/urls/%s/checks", urlId));
 
-            String body = responsePost.getBody();
-
-            assertEquals(responsePost.getStatus(), 200);
-            assertTrue(body.contains(input));
-            assertTrue(body.contains("Url is added successfully!"));
-
-            List<Url> urls = UrlRepository.getEntities();
-            Optional<Url> actualUrl = urls.stream().filter(url -> url.getName().equals(input)).findFirst();
-            System.out.println(body);
-            assertTrue(actualUrl.isPresent());
-            assertEquals(input, actualUrl.get().getName());
-        }
-
-        @Test
-        @Order(5)
-        void testCreateWrongUrl() {
-            String input = "invalid-url";
-            HttpResponse<String> responsePost = Unirest.post(baseUrl + "/urls")
-                    .field("url", input).asString();
-
-            String body = responsePost.getBody();
-
-            assertTrue(body.contains("Invalid URL"));
-        }
-
-
-        @Test
-        @Order(6)
-        void testCreateExistingUrl() {
-            String input = "https://www.example.com";
-            HttpResponse<String> responsePost = Unirest.post(baseUrl + "/urls")
-                    .field("url", input).asString();
-
-            String body = responsePost.getBody();
-
-            assertTrue(body.contains("URL is already exists!"));
-        }
-
-        @Test
-        @Order(7)
-        void testNotFoundUrlId() {
-            HttpResponse<String> response = Unirest.get(baseUrl + "/urls/" + NONEXISTENT_URL_ID).asString();
-            String body = response.getBody();
-
-            assertEquals(response.getStatus(), 404);
-            assertTrue(body.contains("Url with id = 111 not found"));
-        }
+            assertThat(UrlCheckRepository.find(urlId)).isEmpty();
+        });
     }
 }
