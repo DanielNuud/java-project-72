@@ -6,6 +6,7 @@ import hexlet.code.repository.UrlRepository;
 import hexlet.code.util.NamedRoutes;
 import io.javalin.http.Context;
 import io.javalin.http.NotFoundResponse;
+import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -16,27 +17,25 @@ import java.sql.Timestamp;
 public class UrlChecksController {
     public static void check(Context ctx) throws SQLException {
         var urlId = ctx.pathParamAsClass("id", Long.class).get();
-
         var url = UrlRepository.findById(urlId)
-                    .orElseThrow(() -> new NotFoundResponse("URL with ID " + urlId + " is not found"));
+                .orElseThrow(() -> new NotFoundResponse("Entity with id = " + urlId + " not found"));
 
         try {
-            var response = Unirest.get(url.getName()).asString();
-            Document responseBody = Jsoup.parse(response.getBody());
+            HttpResponse<String> response = Unirest.get(url.getName()).asString();
+            Document doc = Jsoup.parse(response.getBody());
 
-            int statusCode = response.getStatus();
+            var statusCode = response.getStatus();
+            var title = doc.title();
 
-            String h1 = responseBody.selectFirst("h1") != null
-                    ? responseBody.selectFirst("h1").text() : "";
+            var h1Temp = doc.selectFirst("h1");
+            var h1 = h1Temp == null ? "" : h1Temp.text();
 
-            String title = responseBody.title();
-
-            String description = !responseBody.select("meta[name=description]").isEmpty()
-                    ? responseBody.select("meta[name=description]").get(0).attr("content") : "";
+            var descriptionTemp = doc.selectFirst("meta[name=description]");
+            var description = descriptionTemp == null ? "" : descriptionTemp.attr("content");
 
             var createdAt = new Timestamp(System.currentTimeMillis());
 
-            var urlCheck = new UrlCheck(statusCode, h1, title, description, urlId, createdAt);
+            var urlCheck = new UrlCheck(statusCode, title, h1, description, urlId, createdAt);
             UrlCheckRepository.save(urlCheck);
             ctx.sessionAttribute("message", "URL is checked successfully!");
             ctx.redirect(NamedRoutes.urlPath(urlId));

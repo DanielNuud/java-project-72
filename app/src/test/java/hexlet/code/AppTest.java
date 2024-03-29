@@ -116,8 +116,8 @@ public final class AppTest {
 
             var check = UrlCheckRepository.find(urlId).get(0);
             assertThat(check.getStatusCode()).isEqualTo(200);
-            assertThat(check.getTitle()).isEqualTo("Hello, world!");
-            assertThat(check.getH1()).isEqualTo("Test");
+            assertThat(check.getH1()).isEqualTo("Hello, world!");
+            assertThat(check.getTitle()).isEqualTo("Test");
             assertThat(check.getDescription()).isEqualTo("Test Webpage");
             assertThat(check.getCreatedAt()).isBeforeOrEqualTo(new Date(System.currentTimeMillis()));
         });
