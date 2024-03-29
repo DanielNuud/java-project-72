@@ -59,12 +59,12 @@ content = @`
                                 <tr>
                                     <td>${item.getId()}</td>
                                     <td><a href="${NamedRoutes.urlPath(item.getId())}">${item.getName()}</a></td>
-                                    @if(page.getChecks().isEmpty())
-                                        <td></td>
-                                        <td></td>
-                                    @else
+                                    @if(page.getChecks().containsKey(item.getId()))
                                         <td>${new SimpleDateFormat("dd/MM/yy HH:mm").format(page.getChecks().get(item.getId()).getCreatedAt())}</td>
                                         <td>${page.getChecks().get(item.getId()).getStatusCode()}</td>
+                                    @else
+                                        <td></td>
+                                        <td></td>
                                         @endif
                                 </tr>
                             @endfor
