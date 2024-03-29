@@ -72,10 +72,8 @@ public class App {
         BaseRepository.dataSource = dataSource;
 
         var app = Javalin.create(config -> {
-            config.plugins.enableDevLogging();
+            config.fileRenderer(new JavalinJte(createTemplateEngine()));
         });
-
-        JavalinJte.init(createTemplateEngine());
 
         app.before(ctx -> ctx.contentType("text/html; charset=utf-8"));
 
