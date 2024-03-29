@@ -1,4 +1,4 @@
-FROM amazoncorretto:20.0.2
+FROM gradle:8.6.0-jdk21
 
 WORKDIR /app
 
