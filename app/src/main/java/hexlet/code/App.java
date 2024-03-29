@@ -15,47 +15,54 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class App {
 
-    public static void main(String[] args) throws SQLException, IOException {
-        Javalin app = getApp();
-        app.start(getPort());
+    private static String getDatabaseUrl() {
+        return System.getenv()
+                .getOrDefault("JDBC_DATABASE_URL", "jdbc:h2:mem:webapp;DB_CLOSE_DELAY=-1;");
     }
 
-    private static int getPort() {
-        String port = System.getenv().getOrDefault("PORT", "7070");
-        return Integer.valueOf(port);
+    private static InputStream getFileFromResourceAsStream(String fileName) {
+        ClassLoader classLoader = App.class.getClassLoader();
+        return classLoader.getResourceAsStream(fileName);
     }
 
-    private static final String JDBC_URL_H2 = "jdbc:h2:mem:project";
-
-    static String jdbcUrlCurrent = getJdbcDatabaseUrl();
-
-    public static String getJdbcDatabaseUrl() {
-        return System.getenv().getOrDefault("JDBC_DATABASE_URL", JDBC_URL_H2);
+    private static String getContentFromStream(InputStream is) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+            return reader.lines().collect(Collectors.joining("\n"));
+        }
     }
 
     private static TemplateEngine createTemplateEngine() {
         ClassLoader classLoader = App.class.getClassLoader();
         ResourceCodeResolver codeResolver = new ResourceCodeResolver("templates", classLoader);
-        return TemplateEngine.create(codeResolver, ContentType.Html);
+        TemplateEngine templateEngine = TemplateEngine.create(codeResolver, ContentType.Html);
+        return templateEngine;
+    }
+
+    private static int getPort() {
+        String port = System.getenv().getOrDefault("PORT", "7070");
+        return Integer.parseInt(port);
     }
 
     public static Javalin getApp() throws IOException, SQLException {
 
         var hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(jdbcUrlCurrent);
+        String databaseUrl = getDatabaseUrl();
+        if (databaseUrl.contains("postgresql")) {
+            hikariConfig.setDriverClassName(org.postgresql.Driver.class.getName());
+        }
+        hikariConfig.setJdbcUrl(databaseUrl);
 
         var dataSource = new HikariDataSource(hikariConfig);
-
-        var inputStream = App.class.getClassLoader().getResourceAsStream("urls.sql");
-        var reader = new BufferedReader(new InputStreamReader(inputStream));
-        var sql = reader.lines().collect(Collectors.joining("\n"));
+        String sql = getContentFromStream(getFileFromResourceAsStream("urls.sql"));
 
         log.info(sql);
         try (var connection = dataSource.getConnection();
@@ -64,9 +71,13 @@ public class App {
         }
         BaseRepository.dataSource = dataSource;
 
-        var app = Javalin.create(config -> config.plugins.enableDevLogging());
+        var app = Javalin.create(config -> {
+            config.plugins.enableDevLogging();
+        });
 
         JavalinJte.init(createTemplateEngine());
+
+        app.before(ctx -> ctx.contentType("text/html; charset=utf-8"));
 
         app.get(NamedRoutes.rootPath(), UrlController::build);
         app.post(NamedRoutes.urlsPath(), UrlController::create);
@@ -75,5 +86,11 @@ public class App {
         app.post(NamedRoutes.urlCheckPath("{id}"), UrlChecksController::check);
 
         return app;
+    }
+
+    public static void main(String[] args) throws IOException, SQLException {
+        var app = getApp();
+
+        app.start(getPort());
     }
 }
