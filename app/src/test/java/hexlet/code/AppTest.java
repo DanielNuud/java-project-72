@@ -51,7 +51,7 @@ public final class AppTest {
 
     @AfterEach
     public void close() {
-        app.close();
+        app.stop();
     }
 
     @AfterAll
