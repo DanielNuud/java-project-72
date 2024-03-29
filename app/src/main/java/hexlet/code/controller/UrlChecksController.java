@@ -20,10 +20,9 @@ public class UrlChecksController {
 
         var url = UrlRepository.findById(urlId)
                     .orElseThrow(() -> new NotFoundResponse("URL with ID " + urlId + " is not found"));
-        var name = url.getName();
 
         try {
-            var response = Unirest.get(name).asString();
+            var response = Unirest.get(url.getName()).asString();
             Document responseBody = Jsoup.parse(response.getBody());
 
             int statusCode = response.getStatus();
@@ -38,10 +37,9 @@ public class UrlChecksController {
 
             var createdAt = new Timestamp(System.currentTimeMillis());
 
-            var urlCheck = new UrlCheck(statusCode, h1, title, description, createdAt);
-            urlCheck.setUrlId(urlId);
+            var urlCheck = new UrlCheck(statusCode, h1, title, description, urlId, createdAt);
             UrlCheckRepository.save(urlCheck);
-
+            ctx.sessionAttribute("message", "URL is checked successfully!");
             ctx.redirect(NamedRoutes.urlPath(urlId));
         } catch (RuntimeException e) {
             ctx.sessionAttribute("message", "Check is failed");

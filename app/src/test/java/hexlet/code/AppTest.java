@@ -111,13 +111,13 @@ public final class AppTest {
         JavalinTest.test(app, (server, client) -> {
             client.post("/urls", "url=" + website);
 
-            var urlId = UrlRepository.findByName(name).get().getId();
+            var urlId = UrlRepository.findByName(name).getId();
             client.post(String.format("/urls/%s/checks", urlId));
 
             var check = UrlCheckRepository.find(urlId).get(0);
             assertThat(check.getStatusCode()).isEqualTo(200);
-            assertThat(check.getH1()).isEqualTo("Hello, world!");
-            assertThat(check.getTitle()).isEqualTo("Test");
+            assertThat(check.getTitle()).isEqualTo("Hello, world!");
+            assertThat(check.getH1()).isEqualTo("Test");
             assertThat(check.getDescription()).isEqualTo("Test Webpage");
             assertThat(check.getCreatedAt()).isBeforeOrEqualTo(new Date(System.currentTimeMillis()));
         });
@@ -129,7 +129,7 @@ public final class AppTest {
             var fakeWebsite = "http://localhost:7070";
             client.post("/urls", "url=" + fakeWebsite);
 
-            var urlId = UrlRepository.findByName(fakeWebsite).get().getId();
+            var urlId = UrlRepository.findByName(fakeWebsite).getId();
             client.post(String.format("/urls/%s/checks", urlId));
 
             assertThat(UrlCheckRepository.find(urlId)).isEmpty();

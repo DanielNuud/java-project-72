@@ -14,6 +14,7 @@ import io.javalin.http.NotFoundResponse;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collections;
@@ -29,22 +30,29 @@ public class UrlController {
     }
 
     public static void create(Context ctx) throws SQLException {
-        try {
-            var url = new Url();
-            var name = normalizeUrl(ctx.formParamAsClass("url", String.class).get());
+        var input = ctx.formParamAsClass("url", String.class)
+                .get()
+                .toLowerCase()
+                .trim();
 
-            if (UrlRepository.existsByName(name)) {
-                ctx.sessionAttribute("message", "Url is already exists!");
-            } else {
-                url.setName(name);
-                url.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-                UrlRepository.save(url);
-                ctx.sessionAttribute("message", "Url is successfully added!");
-            }
-            ctx.redirect(NamedRoutes.urlsPath());
-        } catch (IllegalArgumentException | URISyntaxException | MalformedURLException e) {
+        String normalizedURL;
+
+        try {
+            normalizedURL = normalizeUrl(input);
+        } catch (Exception e) {
             ctx.sessionAttribute("message", "Wrong URL");
             ctx.redirect(NamedRoutes.rootPath());
+            return;
+        }
+
+        if (UrlRepository.findByName(normalizedURL) != null) {
+            ctx.sessionAttribute("message", "Url is already exists!");
+            ctx.redirect(NamedRoutes.urlsPath());
+        } else {
+            var url = new Url(normalizedURL, new Timestamp(System.currentTimeMillis()));
+            UrlRepository.save(url);
+            ctx.sessionAttribute("message", "Url is successfully added!");
+            ctx.redirect(NamedRoutes.urlsPath());
         }
     }
 
@@ -53,24 +61,15 @@ public class UrlController {
         final int itemsPerPage = 10;
         var pageCount = getPage(urls.size(), itemsPerPage);
         int pageNumber = ctx.queryParamAsClass("page", Integer.class).getOrDefault(pageCount);
-        var page = new UrlsPage();
+
 
         if (!urls.isEmpty() && pageNumber > pageCount) {
             throw new NotFoundResponse("Page is not found");
         } else if (!urls.isEmpty()) {
             urls = UrlRepository.getEntitiesPerPage(itemsPerPage, pageNumber);
-
-            Map<Url, UrlCheck> urlsWithLatestChecks = new HashMap<>();
-            for (Url item : urls) {
-                var latestCheck = UrlCheckRepository.findLatestCheck(item.getId())
-                        .orElse(null);
-                urlsWithLatestChecks.put(item, latestCheck);
-            }
-
-            page.setChecks(urlsWithLatestChecks);
-            page.setPageNumber(pageNumber);
         }
-        page.setUrls(urls);
+        var checks = UrlCheckRepository.getAllLastChecks();
+        var page = new UrlsPage(urls, checks, pageNumber);
 
         String message = ctx.consumeSessionAttribute("message");
         page.setMessage(message);
@@ -83,7 +82,7 @@ public class UrlController {
                 .orElseThrow(() -> new NotFoundResponse("URL with id = " + id + " not found"));
         var checks = UrlCheckRepository.find(id);
 
-        var page = new UrlPage(url, checks);
+        var page = new UrlPage(checks, url.getName(), url.getCreatedAt(), id);
         String message = ctx.consumeSessionAttribute("message");
         page.setMessage(message);
 

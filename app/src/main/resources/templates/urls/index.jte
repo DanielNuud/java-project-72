@@ -59,15 +59,13 @@ content = @`
                                 <tr>
                                     <td>${item.getId()}</td>
                                     <td><a href="${NamedRoutes.urlPath(item.getId())}">${item.getName()}</a></td>
-
-                                    !{var latestCheck = page.getChecks().get(item);}
-                                    @if(latestCheck != null)
-                                        <td>${new SimpleDateFormat("dd/MM/yy HH:mm").format(latestCheck.getCreatedAt())}</td>
-                                        <td>${latestCheck.getStatusCode()}</td>
+                                    @if(page.getChecks().isEmpty())
+                                        <td></td>
+                                        <td></td>
                                     @else
-                                        <td></td>
-                                        <td></td>
-                                    @endif
+                                        <td>${new SimpleDateFormat("dd/MM/yy HH:mm").format(page.getChecks().get(item.getId()).getCreatedAt())}</td>
+                                        <td>${page.getChecks().get(item.getId()).getStatusCode()}</td>
+                                        @endif
                                 </tr>
                             @endfor
                             </tbody>

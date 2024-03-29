@@ -24,7 +24,7 @@ public class UrlRepository extends BaseRepository {
             if (generatedKeys.next()) {
                 url.setId(generatedKeys.getLong(1));
             } else {
-                throw new SQLException("Не сформирован ID");
+                throw new SQLException("DB have not returned an id after saving an entity");
             }
         }
     }
@@ -38,15 +38,17 @@ public class UrlRepository extends BaseRepository {
             var resultSet = stmt.executeQuery();
 
             if (resultSet.next()) {
-                var url = getUrl(resultSet);
+                var name = resultSet.getString("name");
+                var createdAt = resultSet.getTimestamp("created_at");
+                var url = new Url(name, createdAt);
+                url.setId(id);
                 return Optional.of(url);
-            } else {
-                return Optional.empty();
             }
+            return Optional.empty();
         }
     }
 
-    public static Optional<Url> findByName(String name) throws SQLException {
+    public static Url findByName(String name) throws SQLException {
         var sql = "SELECT * FROM urls WHERE name = ?";
         try (var conn = dataSource.getConnection();
              var stmt = conn.prepareStatement(sql)) {
@@ -55,11 +57,13 @@ public class UrlRepository extends BaseRepository {
             var resultSet = stmt.executeQuery();
 
             if (resultSet.next()) {
-                var url = getUrl(resultSet);
-                return Optional.of(url);
-            } else {
-                return Optional.empty();
+                var createdAt = resultSet.getTimestamp("created_at");
+                var id = resultSet.getLong("id");
+                var url = new Url(name, createdAt);
+                url.setId(id);
+                return url;
             }
+            return null;
         }
     }
 
@@ -80,13 +84,17 @@ public class UrlRepository extends BaseRepository {
              var stmt = conn.prepareStatement(sql)) {
 
             var resultSet = stmt.executeQuery();
-            var results = new ArrayList<Url>();
+            var result = new ArrayList<Url>();
 
             while (resultSet.next()) {
-                var url = getUrl(resultSet);
-                results.add(url);
+                var id = resultSet.getLong("id");
+                var name = resultSet.getString("name");
+                var createdAt = resultSet.getTimestamp("created_at");
+                var url = new Url(name, createdAt);
+                url.setId(id);
+                result.add(url);
             }
-            return results;
+            return result;
         }
     }
 
@@ -103,17 +111,15 @@ public class UrlRepository extends BaseRepository {
             List<Url> results = new ArrayList<>();
 
             while (resultSet.next()) {
-                var url = getUrl(resultSet);
+                var id = resultSet.getLong("id");
+                var name = resultSet.getString("name");
+                var createdAt = resultSet.getTimestamp("created_at");
+                var url = new Url(name, createdAt);
+                url.setId(id);
                 results.add(url);
             }
             return results;
         }
     }
 
-    private static Url getUrl(ResultSet resultSet) throws SQLException {
-        var id = resultSet.getLong("id");
-        var name = resultSet.getString("name");
-        var createdAt = resultSet.getTimestamp("created_at");
-        return new Url(id, name, createdAt);
-    }
 }
