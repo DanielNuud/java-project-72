@@ -20,4 +20,4 @@ Page Analyzer is a web application designed to analyze specified web pages for S
 
 ## Try it out
 
-https://page-analyzer-cyt3.onrender.com/
+https://page-analyzer-gbhc.onrender.com
