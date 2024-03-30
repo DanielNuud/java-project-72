@@ -18,6 +18,6 @@ Page Analyzer is a web application designed to analyze specified web pages for S
 [![Java CI](https://github.com/DanielNuud/java-project-72/actions/workflows/main.yaml/badge.svg)](https://github.com/DanielNuud/java-project-72/actions/workflows/main.yaml)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/0d45d36cad8c7e4116c6/test_coverage)](https://codeclimate.com/github/DanielNuud/java-project-72/test_coverage)
 
-=======
+## Try it out
 
 https://page-analyzer-cyt3.onrender.com/
